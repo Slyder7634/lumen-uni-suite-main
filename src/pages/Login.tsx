@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { signIn, signUp, UserRole } from '@/lib/auth';
+import { signIn, signUp, getCurrentUser, UserRole } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, ShieldCheck, BookOpen } from 'lucide-react';
 
@@ -54,8 +54,19 @@ export default function Login() {
         title: "Success",
         description: "Signed in successfully!",
       });
-      // Let the Index page handle role-based redirect
-      navigate('/');
+      // Get the user's profile (includes role) and navigate directly to their dashboard
+      try {
+        const current = await getCurrentUser();
+        if (current?.role) {
+          navigate(`/${current.role}`);
+        } else {
+          // Fallback to root if profile isn't available yet
+          navigate('/');
+        }
+      } catch (err) {
+        // If anything goes wrong, fall back to root
+        navigate('/');
+      }
     }
     setLoading(false);
   };
